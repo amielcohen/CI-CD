@@ -1,17 +1,15 @@
-// --- tiny helper functions (pure Groovy, no Jenkins steps here) ---
+// --- tiny helper functions (pure Groovy) ---
 def banner(String msg) { return "\n===== ${msg} =====" }
 def mkVersion(String branch, String buildNum) {
   return ((branch ?: 'local') + "-" + (buildNum ?: '0')).toLowerCase()
 }
+// Safer fake hash: no join(), works in Jenkins sandbox
 def fakeHash(int len = 8) {
-  def chars = (('a'..'f') + ('0'..'9')).join()
-  def r = new Random()
-  (1..len).collect { chars[r.nextInt(chars.length())] }.join()
+  UUID.randomUUID().toString().replaceAll('-', '').take(len)
 }
 
 pipeline {
   agent any
-
   options { timestamps() }
 
   parameters {
@@ -19,9 +17,7 @@ pipeline {
     string(name: 'ENV', defaultValue: 'dev', description: 'Target environment (fake)')
   }
 
-  environment {
-    APP_NAME = 'demo-app'
-  }
+  environment { APP_NAME = 'demo-app' }
 
   stages {
     stage('Info') {
@@ -90,7 +86,6 @@ pipeline {
       steps {
         script {
           echo banner('Package (fake)')
-          // No real packaging; just touch a pretend artifact
           writeFile file: 'build/artifact.txt', text: 'pretend binary bytes'
           archiveArtifacts artifacts: 'build/**', fingerprint: true
           if (params.SLOW_MODE) sleep time: 1, unit: 'SECONDS'
@@ -134,7 +129,7 @@ pipeline {
     failure { echo "❌ FAILURE — ${env.JOB_NAME} #${env.BUILD_NUMBER}" }
     always  {
       echo '🧹 Cleaning workspace (fake)'
-      // cleanWs() // uncomment if you want real cleanup
+      // cleanWs()
     }
   }
 }
