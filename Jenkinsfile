@@ -101,3 +101,40 @@ pipeline {
     stage('Deploy (fake)') {
       steps {
         script {
+          echo banner("Deploy to ${params.ENV} (fake)")
+          echo "🚀 Pretending to deploy ${env.APP_NAME} to ${params.ENV}"
+          if (params.SLOW_MODE) sleep time: 1, unit: 'SECONDS'
+        }
+      }
+    }
+
+    stage('Smoke Check (fake)') {
+      steps {
+        script {
+          echo banner('Smoke Check (fake)')
+          echo "✅ Everything looks good (pretend)"
+          if (params.SLOW_MODE) sleep time: 1, unit: 'SECONDS'
+        }
+      }
+    }
+
+    stage('Release (main only, fake)') {
+      when { branch 'main' }
+      steps {
+        script {
+          echo banner('Tag/Release (fake)')
+          echo "🏷️ Would create a tag and a release note here"
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo "✅ SUCCESS — ${env.JOB_NAME} #${env.BUILD_NUMBER}" }
+    failure { echo "❌ FAILURE — ${env.JOB_NAME} #${env.BUILD_NUMBER}" }
+    always  {
+      echo '🧹 Cleaning workspace (fake)'
+      // cleanWs() // uncomment if you want real cleanup
+    }
+  }
+}
